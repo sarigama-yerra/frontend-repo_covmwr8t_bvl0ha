@@ -3,31 +3,14 @@ import Hero from './components/Hero'
 import VendorForm from './components/VendorForm'
 import VendorList from './components/VendorList'
 import VendorDetail from './components/VendorDetail'
+import OnboardingWizard from './components/OnboardingWizard'
 
 function App() {
   const [selected, setSelected] = useState(null)
+  const [wizardOpen, setWizardOpen] = useState(false)
 
-  const quickOnboard = async () => {
-    const base = import.meta.env.VITE_BACKEND_URL
-    const res = await fetch(`${base}/vendors`, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({
-        name: 'Alex Vendor',
-        email: 'alex@example.com',
-        business_name: 'Alex Supplies Co.',
-        phone: '',
-        category: 'Supplies',
-        website: 'https://example.com'
-      })
-    })
-    const data = await res.json()
-    if (res.ok) {
-      // After create, refresh vendor list by forcing re-render; selection handled in VendorList
-      alert('Sample vendor created! Use the list to select it.')
-    } else {
-      alert(data.detail || 'Failed to create vendor')
-    }
+  const startOnboarding = () => {
+    setWizardOpen(true)
   }
 
   return (
@@ -36,14 +19,13 @@ function App() {
 
       <div className="relative min-h-screen p-6 md:p-10">
         <div className="max-w-6xl mx-auto space-y-8">
-          <Hero onCreateVendor={quickOnboard} />
+          <Hero onCreateVendor={startOnboarding} />
 
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
             <div className="md:col-span-1 space-y-4">
               <div className="bg-slate-800/50 border border-blue-500/20 rounded-2xl p-4">
                 <h2 className="text-white font-semibold mb-3">Onboard Vendor</h2>
                 <VendorForm onCreated={(id)=>{
-                  // Ideally refresh the list or auto-select; keep simple for now
                   alert('Vendor created! Find it in the list and click to view details.')
                 }} />
               </div>
@@ -66,6 +48,15 @@ function App() {
           </div>
         </div>
       </div>
+
+      <OnboardingWizard
+        open={wizardOpen}
+        onClose={() => setWizardOpen(false)}
+        onCompleted={(v) => {
+          setWizardOpen(false)
+          setSelected(v)
+        }}
+      />
 
       {/* Utility styles */}
       <style>{`
